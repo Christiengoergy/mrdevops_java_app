@@ -1,3 +1,4 @@
+@Library('jenkins_shared_lib') _
 pipeline{
     agent any
 
@@ -5,10 +6,10 @@ pipeline{
         stage('Git chwechout'){
 
             steps{
-               
-                script{
-                    git branch: 'main', url: 'https://github.com/Christiengoergy/mrdevops_java_app.git'
-
+               gitCheckout(
+                branch: "main",
+                url: "https://github.com/Christiengoergy/mrdevops_java_app.git"
+            )
                 }
             }
     }
