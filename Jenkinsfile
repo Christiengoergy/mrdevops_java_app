@@ -4,6 +4,9 @@ pipeline{
     parameters{
 
         choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        choice(name: 'Project', description: 'dockerimagename', defaultValue: 'javaapp')
+        choice(name: 'ImageTag', description: 'dockerimagetag', defaultValue: 'v1')
+        choice(name: 'hubUser', description: 'dockerusername', defaultValue: 'christiengoergy')
     }
     stages{
         stage('Git chwechout'){
@@ -50,7 +53,15 @@ pipeline{
                 QualityGateStatus(SonarQubecredentialsId)
                }
             }
-        }          
+        }
+        stage('dockerbuild'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                dockerBuild("${params.Project}","${params.ImageTag}","${params.HubUser}")
+               }
+            }
+        }              
     }
 }
 
