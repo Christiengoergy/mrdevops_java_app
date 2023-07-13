@@ -76,8 +76,15 @@ pipeline{
                script{
                 dockerImagePush("${params.Project}","${params.ImageTag}","${params.hubUser}")
                }
-            }
-        }             
+            }    
+        }
+        stage('docker cleanup'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                dockerImageCleanup("${params.Project}","${params.ImageTag}","${params.hubUser}")
+               }
+            }             
     }
 }
 
