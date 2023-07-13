@@ -85,6 +85,6 @@ pipeline{
                 dockerImageCleanup("${params.Project}","${params.ImageTag}","${params.hubUser}")
                }
             }             
-    }
+        }      
+    } 
 }
-
