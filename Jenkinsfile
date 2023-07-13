@@ -49,7 +49,7 @@ pipeline{
                      when { expression {  params.action == 'create' } }
             steps{
                script{
-                def SonarQubecredentialsId = 'sonar-api'
+                def SonarQubecredentialsId = 'sonarqube-api'
                 QualityGateStatus(SonarQubecredentialsId)
                }
             }
