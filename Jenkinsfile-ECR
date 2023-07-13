@@ -1,0 +1,90 @@
+@Library('jenkins_shared_lib') _
+pipeline{
+    agent any
+    parameters{
+
+        choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
+        string(name: 'aws_account_id', description: 'AWS Account ID', defaultValue: '273733910674')
+        string(name: 'Region', description: 'Region', defaultValue: 'us-east-1')
+        string(name: 'ERC_REPO_Name', description: 'ECRname', defaultValue: 'jenkinsdemo')
+    }
+    stages{
+        stage('Git chwechout'){
+                   when { expression {  params.action == 'create' } }
+
+            steps{
+               gitCheckout(
+                branch: "main",
+                url: "https://github.com/Christiengoergy/mrdevops_java_app.git"
+            )
+                }
+            }
+        stage('Unit Test maven'){
+                        when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                  mvnTest()
+               }
+            }
+        }
+        stage('Integration Test maven'){
+                      when { expression {  params.action == 'create' } }
+
+            steps{
+               script{
+                  mvnIntegrationTest()
+               }
+            }
+        }
+        stage('Static code analysis:sonarqube'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                def SonarQubecredentialsId = 'sonarqube-api'
+                statiCodeAnalysis(SonarQubecredentialsId)
+               }
+            }
+        } 
+        stage('Quality Gate status check :sonarqube'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                def SonarQubecredentialsId = 'sonarqube-api'
+                QualityGateStatus(SonarQubecredentialsId)
+               }
+            }
+        }
+        stage('dockerbuild : ECR'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                dockerBuild("${params.aws_account_id}","${params.Region}","${params.ERC_REPO_Name}")
+               }
+            }
+        }    
+        stage('docker image scan: trivy'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                dockerImageScan("${params.aws_account_id}","${params.Region}","${params.ERC_REPO_Name}")
+               }
+            }
+        } 
+        stage('docker image push : ECR'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                dockerImagePush("${params.aws_account_id}","${params.Region}","${params.ERC_REPO_Name}")
+               }
+            }    
+        }
+        stage('docker cleanup : ECR'){
+                     when { expression {  params.action == 'create' } }
+            steps{
+               script{
+                dockerImageCleanup("${params.aws_account_id}","${params.Region}","${params.ERC_REPO_Name}")
+               }
+            }             
+        }      
+    } 
+}
